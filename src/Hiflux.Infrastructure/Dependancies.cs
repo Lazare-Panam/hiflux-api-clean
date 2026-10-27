@@ -14,3 +14,4 @@ namespace Hiflux.Infrastructure
         }
     }
 }
+
