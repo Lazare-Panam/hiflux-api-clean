@@ -1,0 +1,6 @@
+@Hiflux.Web_HostAddress = http://localhost:5190
+
+GET {{Hiflux.Web_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
