@@ -3,7 +3,7 @@ using Hiflux.Infrastructure;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
-builder.Services.ConfigureDependancies(builder.Configuration);
+builder.Services.ConfigureDatabases(builder.Configuration);
 builder.Services.AddOpenApi();
 
 var app = builder.Build();
