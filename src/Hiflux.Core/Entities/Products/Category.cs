@@ -15,8 +15,8 @@ namespace Hiflux.Core.Entities.Products
         public string? TemperatureRange { get; set; }
         public string? Approvals { get; set; }
         public string? DatasheetUrl { get; set; }
-        public string? KeyFeatures { get; set; }       // one feature per line
-        public string? CertificatesJson { get; set; }  // JSON: [{"label","url"}]
+        public List<string> KeyFeatures { get; set; } = [];
+        public List<Certificate> Certificates { get; set; } = [];
 
         public List<CategoryFilter> CategoryFilters { get; set; } = [];
         public List<CatalogProduct> Products { get; set; } = [];

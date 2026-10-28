@@ -2,7 +2,7 @@
   <Folder Name="/src/">
     <Project Path="src/Hiflux.Core/Hiflux.Core.csproj" />
     <Project Path="src/Hiflux.Infrastructure/Hiflux.Infrastructure.csproj" />
-    <Project Path="src/Hiflux.Web/Hiflux.Web.csproj" />
+    <Project Path="src/Hiflux.Api/Hiflux.Api.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/Hiflux.UnitTests/Hiflux.UnitTests.csproj" />
