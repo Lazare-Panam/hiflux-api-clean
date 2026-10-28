@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Hiflux.Infrastructure
 {
-    public static class Dependancies
+    public static class Dependencies
     {
         public static void ConfigureDatabases(this IServiceCollection services, IConfiguration configuration)
         {
