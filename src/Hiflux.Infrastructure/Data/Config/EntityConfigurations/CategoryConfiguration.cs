@@ -17,10 +17,8 @@ namespace Hiflux.Infrastructure.Data.Config.EntityConfigurations
         public void Configure(EntityTypeBuilder<Category> builder)
         {
             builder.HasKey(c => c.CategoryId);
-
             builder.Property(c => c.Name).HasMaxLength(100).IsRequired();
             builder.HasIndex(c => c.Name).IsUnique();
-
             builder.Property(c => c.CatalogUrl).HasMaxLength(2048);
             builder.Property(c => c.CadUrl).HasMaxLength(2048);
             builder.Property(c => c.Description).HasMaxLength(2000);
@@ -29,25 +27,27 @@ namespace Hiflux.Infrastructure.Data.Config.EntityConfigurations
             builder.Property(c => c.Design).HasMaxLength(200);
             builder.Property(c => c.TemperatureRange).HasMaxLength(100);
             builder.Property(c => c.Approvals).HasMaxLength(200);
-            builder.Property(c => c.DatasheetUrl).HasMaxLength(2048);    
+            builder.Property(c => c.DatasheetUrl).HasMaxLength(2048);
+            // Store List<string> in one text column.  ["Fire-safe","Full bore"] <-> "Fire-safe\nFull bore"
             builder.Property(c => c.KeyFeatures)
                 .HasConversion(
-                    list => string.Join('\n', list),
-                    text => text.Replace("\r\n", "\n")
+                    list => string.Join('\n', list),                 // to DB:   ["a","b"] -> "a\nb"
+                    text => text.Replace("\r\n", "\n")               // from DB: "a\r\nb\n\n c " -> ["a","b","c"]
                                 .Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-                                .ToList())
+                                .ToList())                           // cleans Windows \r\n, blank lines, stray spaces
+                                                                     // List is mutable, so EF needs this to notice when the items change:
                 .Metadata.SetValueComparer(
                     new ValueComparer<List<string>>(
-                        (a, b) => a!.SequenceEqual(b!),
+                        (a, b) => a!.SequenceEqual(b!),              // equal = same items, same order
                         v => v.Aggregate(0, (h, s) => HashCode.Combine(h, s.GetHashCode())),
                         v => v.ToList()));
 
-
+            // Store List<Certificate> as JSON in one column.  [{CE,/ce.pdf}] <-> "[{\"label\":\"CE\",\"url\":\"/ce.pdf\"}]"
             builder.Property(c => c.Certificates)
                 .HasColumnName("CertificatesJson")
                 .HasConversion(
-                    list => JsonSerializer.Serialize(list, CertJson),
-                    json => JsonSerializer.Deserialize<List<Certificate>>(json, CertJson) ?? new List<Certificate>())
+                    list => JsonSerializer.Serialize(list, CertJson),    // to DB:   objects -> JSON text
+                    json => JsonSerializer.Deserialize<List<Certificate>>(json, CertJson) ?? new List<Certificate>())  // from DB: JSON -> objects
                 .Metadata.SetValueComparer(
                     new ValueComparer<List<Certificate>>(
                         (a, b) => a!.SequenceEqual(b!),

@@ -36,5 +36,42 @@ namespace Hiflux.Infrastructure.Data.Queries
             var categories = await _context.Categories.AsNoTracking().OrderBy(c => c.Name).ToListAsync(ct);
             return categories.Select(MapCategory).ToList();
         }
+        public async Task<IReadOnlyList<CategoryFilterDto>?> GetCategoryFiltersAsync(int categoryId, CancellationToken ct = default)
+        {
+            if(!await CategoryExistsAsync(categoryId,ct))
+            {
+                _logger.LogInformation("Catgory {CategoryId} not found when loading filters", categoryId);
+                return null;
+            }
+
+            /*SELECT cf.FilterId, f.Name, cf.SortOrder          
+                FROM CategoryFilters AS cf
+                INNER JOIN Filters AS f ON cf.FilterId = f.FilterId
+                WHERE cf.CategoryId = @categoryId
+                ORDER BY cf.SortOrder*/
+
+            var filterDefs = await _context.CategoryFilters.AsNoTracking()
+                .Where(cf=>cf.CategoryId == categoryId)
+                .OrderBy(cf=>cf.SortOrder)
+                .Select(cf=> new {cf.FilterId, cf.Filter.Name, cf.SortOrder})
+                .ToListAsync(ct);
+            // the distinct values that actually occur for this series.  DISTINCT because
+            // ProductFilterValues has one row per product -> the same value repeats per product
+            var values = await _context.ProductFilterValues.AsNoTracking()
+                .Where(cf => cf.CategoryId == categoryId)
+                .Select(v => new { v.FilterId, v.Value })
+                .Distinct()
+                .ToListAsync();
+            // index the flat value list by FilterId so each filter's lookup is O(1) (in-memory re-join) avoids cartesian explosion
+            var valuesByFilter = values.ToLookup(v => v.FilterId, v => v.Value);
+
+            return filterDefs.Select(fd => new CategoryFilterDto
+            {
+                FilterId = fd.FilterId,
+                Name = fd.Name,
+                SortOrder = fd.SortOrder,
+                Values = valuesByFilter[fd.FilterId].OrderBy(v => v).ToList()
+            }).ToList();
+        }
     }
 }
