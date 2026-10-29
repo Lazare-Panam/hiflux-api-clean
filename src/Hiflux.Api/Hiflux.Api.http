@@ -1,0 +1,6 @@
+@Hiflux.Api_HostAddress = http://localhost:5190
+
+GET {{Hiflux.Api_HostAddress}}/api/SeriesProduct/categories
+Accept: application/json
+
+###
