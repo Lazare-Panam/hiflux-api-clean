@@ -49,7 +49,6 @@ namespace Hiflux.Infrastructure.Data.Queries
                 INNER JOIN Filters AS f ON cf.FilterId = f.FilterId
                 WHERE cf.CategoryId = @categoryId
                 ORDER BY cf.SortOrder*/
-
             var filterDefs = await _context.CategoryFilters.AsNoTracking()
                 .Where(cf=>cf.CategoryId == categoryId)
                 .OrderBy(cf=>cf.SortOrder)
