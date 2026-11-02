@@ -38,7 +38,7 @@ namespace Hiflux.Infrastructure.Data.Queries
         }
         public async Task<IReadOnlyList<CategoryFilterDto>?> GetCategoryFiltersAsync(int categoryId, CancellationToken ct = default)
         {
-            if(!await CategoryExistsAsync(categoryId,ct))
+            if (!await CategoryExistsAsync(categoryId, ct))
             {
                 _logger.LogInformation("Catgory {CategoryId} not found when loading filters", categoryId);
                 return null;
@@ -50,9 +50,9 @@ namespace Hiflux.Infrastructure.Data.Queries
                 WHERE cf.CategoryId = @categoryId
                 ORDER BY cf.SortOrder*/
             var filterDefs = await _context.CategoryFilters.AsNoTracking()
-                .Where(cf=>cf.CategoryId == categoryId)
-                .OrderBy(cf=>cf.SortOrder)
-                .Select(cf=> new {cf.FilterId, cf.Filter.Name, cf.SortOrder})
+                .Where(cf => cf.CategoryId == categoryId)
+                .OrderBy(cf => cf.SortOrder)
+                .Select(cf => new { cf.FilterId, cf.Filter.Name, cf.SortOrder })
                 .ToListAsync(ct);
             // the distinct values that actually occur for this series.  DISTINCT because
             // ProductFilterValues has one row per product -> the same value repeats per product

@@ -1,0 +1,5 @@
+# Normalize line endings so the Linux CI runner matches local Windows checkouts.
+# .editorconfig enforces end_of_line = crlf for C#, so force CRLF for .cs everywhere
+# (otherwise `dotnet format --verify-no-changes` fails on CI over LF vs CRLF).
+* text=auto
+*.cs text eol=crlf

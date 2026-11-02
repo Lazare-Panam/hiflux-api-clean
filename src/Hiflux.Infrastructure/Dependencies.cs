@@ -1,7 +1,7 @@
 ﻿using Hiflux.Infrastructure.Data;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.EntityFrameworkCore;
 
 namespace Hiflux.Infrastructure
 {
@@ -17,7 +17,7 @@ namespace Hiflux.Infrastructure
                         maxRetryCount: 5,
                         maxRetryDelay: TimeSpan.FromSeconds(30),
                         errorNumbersToAdd: null);
-                }));  
+                }));
         }
     }
 }

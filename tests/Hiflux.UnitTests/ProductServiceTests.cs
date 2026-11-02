@@ -21,7 +21,6 @@ public class ProductServiceTests
         var context = new ApplicationDbContext(options);
         context.Database.EnsureCreated();
 
-        // Series 10 shows two filters: Size (sort 0) then End Connection (sort 1)
         context.Categories.Add(new Category { CategoryId = 10, Name = "Ball Valves" });
         context.Filters.AddRange(
             new Filter { FilterId = 1, Name = "Size" },
@@ -36,7 +35,7 @@ public class ProductServiceTests
             new ProductFilterValue { Id = 1, ProductId = 100, CategoryId = 10, FilterId = 1, Value = "1/2\"" },
             new ProductFilterValue { Id = 2, ProductId = 100, CategoryId = 10, FilterId = 2, Value = "NPT" },
             new ProductFilterValue { Id = 3, ProductId = 101, CategoryId = 10, FilterId = 1, Value = "3/4\"" },
-            new ProductFilterValue { Id = 4, ProductId = 101, CategoryId = 10, FilterId = 2, Value = "NPT" }); // NPT repeats -> should dedupe
+            new ProductFilterValue { Id = 4, ProductId = 101, CategoryId = 10, FilterId = 2, Value = "NPT" });
         context.SaveChanges();
 
         return (context, connection);
@@ -60,11 +59,11 @@ public class ProductServiceTests
 
             // ordered by SortOrder
             Assert.Equal("Size", result[0].Name);
-            Assert.Equal(["1/2\"", "3/4\""], result[0].Values);   
+            Assert.Equal(["1/2\"", "3/4\""], result[0].Values);
 
 
             Assert.Equal("End Connection", result[1].Name);
-            Assert.Equal(["NPT"], result[1].Values);              
+            Assert.Equal(["NPT"], result[1].Values);
         }
         finally
         {
