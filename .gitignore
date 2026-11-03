@@ -1,7 +1,7 @@
 # ---------------------------------------------
 # .gitignore for .NET / Hiflux Clean Architecture
 # ---------------------------------------------
-
+LEARNING_LOG
 # Build output
 [Bb]in/
 [Oo]bj/
