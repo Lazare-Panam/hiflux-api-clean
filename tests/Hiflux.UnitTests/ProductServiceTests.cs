@@ -331,4 +331,55 @@ public class ProductServiceTests
             connection.Dispose();
         }
     }
+
+    [Fact]
+    public async Task GetCategoriesAsync_returns_categories_ordered_by_name()
+    {
+        var (context, connection) = CreateSeededContext();
+        try
+        {
+            // seed already has "Ball Valves" (id 10); add two more out of alphabetical order
+            context.Categories.AddRange(
+                new Category { CategoryId = 20, Name = "Check Valves" },
+                new Category { CategoryId = 30, Name = "Actuators" });
+            context.SaveChanges();
+
+            var service = CreateService(context);
+
+            var result = await service.GetCategoriesAsync(default);
+
+            Assert.Equal(3, result.Count);
+            Assert.Equal(["Actuators", "Ball Valves", "Check Valves"], result.Select(c => c.Name).ToList());
+        }
+        finally
+        {
+            context.Dispose();
+            connection.Dispose();
+        }
+    }
+
+    [Fact]
+    public async Task GetCategoriesAsync_returns_empty_list_when_no_categories()
+    {
+        var connection = new SqliteConnection("DataSource=:memory:");
+        connection.Open();
+        try
+        {
+            var options = new DbContextOptionsBuilder<ApplicationDbContext>()
+                .UseSqlite(connection)
+                .Options;
+            using var context = new ApplicationDbContext(options);
+            context.Database.EnsureCreated();
+
+            var service = CreateService(context);
+
+            var result = await service.GetCategoriesAsync(default);
+
+            Assert.Empty(result);
+        }
+        finally
+        {
+            connection.Dispose();
+        }
+    }
 }

@@ -23,6 +23,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Hiflux.Core\Hiflux.Core.csproj" />
     <ProjectReference Include="..\..\src\Hiflux.Infrastructure\Hiflux.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\Hiflux.Api\Hiflux.Api.csproj" />
   </ItemGroup>
 
 </Project>

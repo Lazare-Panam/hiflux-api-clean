@@ -15,8 +15,4 @@
     <ProjectReference Include="..\Hiflux.Infrastructure\Hiflux.Infrastructure.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Controllers\" />
-  </ItemGroup>
-
 </Project>
