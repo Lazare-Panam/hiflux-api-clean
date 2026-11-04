@@ -2,6 +2,7 @@
 using Hiflux.Core.Dtos;
 using Hiflux.Core.Entities.Products;
 using Hiflux.Core.Interfaces;
+using Hiflux.Infrastructure.Data.Configurator;
 using Hiflux.Infrastructure.Data.Helpers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -102,6 +103,49 @@ namespace Hiflux.Infrastructure.Data.Queries
                 .FirstOrDefaultAsync(ct);
 
         }
-        public Task<ConfiguratorStateDto?> GetConfiguratorStateAsync(int categoryId, IReadOnlyDictionary<string, string> selection, CancellationToken ct) => throw new NotImplementedException();
+        public async Task<ConfiguratorStateDto?> GetConfiguratorStateAsync(int categoryId, IReadOnlyDictionary<string, string> selection, CancellationToken ct)
+        {
+            if (!await CategoryExistsAsync(categoryId, ct))
+            {
+                _logger.LogInformation("Category {CategoryId} not found when configuring", categoryId);
+                return null;
+            }
+            var filterDefs = await _context.CategoryFilters.AsNoTracking()
+                .Where(cf => cf.CategoryId == categoryId)
+                .OrderBy(cf => cf.SortOrder)
+                .Select(cf => new FilterDef(cf.FilterId, cf.Filter.Name, cf.SortOrder))
+                .ToListAsync(ct);
+
+            var rows = await _context.ProductFilterValues.AsNoTracking()
+                .Where(v => v.CategoryId == categoryId)
+                .Select(v => new SpecRow(v.ProductId, v.Filter.Name, v.Value))
+                .ToListAsync(ct);
+
+            var state = ConfiguratorEngine.Compute(filterDefs, rows, selection);
+
+            CatalogProductDto? resolved = null;
+            if (state.ResolvedProductId is int pid)
+            {
+                resolved = await _context.CatalogProducts.AsNoTracking()
+                    .Where(p => p.ProductId == pid)
+                    .Select(CatalogMappings.ToDto)
+                    .FirstOrDefaultAsync(ct);
+            }
+
+            var imageUrl = await _context.CatalogProducts.AsNoTracking()
+                .Where(p => p.CategoryId == categoryId && p.ImageUrl != null)
+                .OrderBy(p => p.PartNumber)
+                .Select(p => p.ImageUrl)
+                .FirstOrDefaultAsync(ct);
+
+            return new ConfiguratorStateDto
+            {
+                Options = state.Options,
+                MatchCount = state.MatchCount,
+                TotalCount = state.TotalCount,
+                Resolved = resolved,
+                ImageUrl = imageUrl,
+            };
+        }
     }
 }

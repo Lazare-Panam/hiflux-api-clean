@@ -266,4 +266,69 @@ public class ProductServiceTests
             connection.Dispose();
         }
     }
+
+    [Fact]
+    public async Task GetConfiguratorStateAsync_with_no_selection_matches_all_products()
+    {
+        var (context, connection) = CreateSeededContext();
+        try
+        {
+            var service = CreateService(context);
+
+            var result = await service.GetConfiguratorStateAsync(10, new Dictionary<string, string>(), default);
+
+            Assert.NotNull(result);
+            Assert.Equal(2, result!.TotalCount);
+            Assert.Equal(2, result.MatchCount);
+            Assert.Null(result.Resolved);
+            Assert.Equal(2, result.Options.Count); // Size + End Connection
+        }
+        finally
+        {
+            context.Dispose();
+            connection.Dispose();
+        }
+    }
+
+    [Fact]
+    public async Task GetConfiguratorStateAsync_resolves_the_product_when_selection_narrows_to_one()
+    {
+        var (context, connection) = CreateSeededContext();
+        try
+        {
+            var service = CreateService(context);
+
+            var selection = new Dictionary<string, string> { ["Size"] = "1/2\"" };
+            var result = await service.GetConfiguratorStateAsync(10, selection, default);
+
+            Assert.NotNull(result);
+            Assert.Equal(1, result!.MatchCount);
+            Assert.NotNull(result.Resolved);
+            Assert.Equal("BV-100", result.Resolved!.PartNumber);
+        }
+        finally
+        {
+            context.Dispose();
+            connection.Dispose();
+        }
+    }
+
+    [Fact]
+    public async Task GetConfiguratorStateAsync_returns_null_when_category_does_not_exist()
+    {
+        var (context, connection) = CreateSeededContext();
+        try
+        {
+            var service = CreateService(context);
+
+            var result = await service.GetConfiguratorStateAsync(999, new Dictionary<string, string>(), default);
+
+            Assert.Null(result);
+        }
+        finally
+        {
+            context.Dispose();
+            connection.Dispose();
+        }
+    }
 }
