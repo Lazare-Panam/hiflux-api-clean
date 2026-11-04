@@ -21,7 +21,7 @@ public class CatalogMappings
         Specs = p.FilterValues
                .Select(v => new ProductSpecDto { Filter = v.Filter.Name, Value = v.Value })
                .ToList()
-        
+
     };
     public static CategoryDto MapCategory(Category c) => new()
     {

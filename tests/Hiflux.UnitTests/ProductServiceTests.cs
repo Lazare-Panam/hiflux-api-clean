@@ -206,4 +206,64 @@ public class ProductServiceTests
             connection.Dispose();
         }
     }
+
+    [Fact]
+    public async Task GetProductByPartNumberAsync_returns_the_product_with_specs_when_found()
+    {
+        var (context, connection) = CreateSeededContext();
+        try
+        {
+            var service = CreateService(context);
+
+            var result = await service.GetProductByPartNumberAsync("BV-100", default);
+
+            Assert.NotNull(result);
+            Assert.Equal("BV-100", result!.PartNumber);
+            Assert.Contains(result.Specs, s => s.Filter == "Size" && s.Value == "1/2\"");
+            Assert.Contains(result.Specs, s => s.Filter == "End Connection" && s.Value == "NPT");
+        }
+        finally
+        {
+            context.Dispose();
+            connection.Dispose();
+        }
+    }
+
+    [Fact]
+    public async Task GetProductByPartNumberAsync_returns_null_when_part_number_not_found()
+    {
+        var (context, connection) = CreateSeededContext();
+        try
+        {
+            var service = CreateService(context);
+
+            var result = await service.GetProductByPartNumberAsync("NOPE", default);
+
+            Assert.Null(result);
+        }
+        finally
+        {
+            context.Dispose();
+            connection.Dispose();
+        }
+    }
+
+    [Fact]
+    public async Task GetProductByPartNumberAsync_returns_null_when_part_number_is_blank()
+    {
+        var (context, connection) = CreateSeededContext();
+        try
+        {
+            var service = CreateService(context);
+
+            var result = await service.GetProductByPartNumberAsync("   ", default);
+
+            Assert.Null(result);
+        }
+        finally
+        {
+            context.Dispose();
+            connection.Dispose();
+        }
+    }
 }

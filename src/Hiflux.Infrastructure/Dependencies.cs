@@ -12,6 +12,10 @@ namespace Hiflux.Infrastructure
         public static void ConfigureDatabases(this IServiceCollection services, IConfiguration configuration)
         {
             var connectionString = configuration.GetConnectionString("DefaultConnection");
+            if (string.IsNullOrEmpty(connectionString))
+            {
+                 throw new InvalidOperationException("Connection string 'DefaultConnection' is missing. Set 'ConnectionStrings:DefaultConnection' " + "in appsettings.json or the 'ConnectionStrings__DefaultConnection' environment variable.");
+            }
             services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(connectionString,
                 sqlServerOptionsAction: sqlOptions =>
                 {

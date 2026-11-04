@@ -2,9 +2,9 @@
 using Hiflux.Core.Dtos;
 using Hiflux.Core.Entities.Products;
 using Hiflux.Core.Interfaces;
+using Hiflux.Infrastructure.Data.Helpers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Hiflux.Infrastructure.Data.Helpers;
 
 namespace Hiflux.Infrastructure.Data.Queries
 {
@@ -18,7 +18,7 @@ namespace Hiflux.Infrastructure.Data.Queries
             _logger = logger;
         }
         private Task<bool> CategoryExistsAsync(int categoryId, CancellationToken ct) => _context.Categories.AnyAsync(c => c.CategoryId == categoryId, ct);
-        
+
         public async Task<IReadOnlyList<CategoryDto>> GetCategoriesAsync(CancellationToken ct)
         {
             var categories = await _context.Categories.AsNoTracking().OrderBy(c => c.Name).ToListAsync(ct);
@@ -88,7 +88,20 @@ namespace Hiflux.Infrastructure.Data.Queries
             return products;
 
         }
-        public Task<CatalogProductDto?> GetProductByPartNumberAsync(string partNumber, CancellationToken ct) => throw new NotImplementedException();
+        public async Task<CatalogProductDto?> GetProductByPartNumberAsync(string partNumber, CancellationToken ct)
+        {
+            if (string.IsNullOrWhiteSpace(partNumber))
+            {
+                _logger.LogInformation("GetProductByPartNumberAsync called with empty part number");
+                return null;
+            }
+
+            return await _context.CatalogProducts.AsNoTracking()
+                .Where(p => p.PartNumber == partNumber)
+                .Select(CatalogMappings.ToDto)
+                .FirstOrDefaultAsync(ct);
+
+        }
         public Task<ConfiguratorStateDto?> GetConfiguratorStateAsync(int categoryId, IReadOnlyDictionary<string, string> selection, CancellationToken ct) => throw new NotImplementedException();
     }
 }
