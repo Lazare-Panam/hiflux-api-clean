@@ -1,11 +1,14 @@
-﻿using Hiflux.Core.Dtos;
+﻿using System.Linq.Expressions;
+using Hiflux.Core.Dtos;
 using Hiflux.Core.Entities.Products;
+using Hiflux.Core.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Hiflux.Infrastructure.Data.Helpers;
 
 namespace Hiflux.Infrastructure.Data.Queries
 {
-    public class ProductService
+    public class ProductService : IProductService
     {
         private readonly ApplicationDbContext _context;
         private readonly ILogger<ProductService> _logger;
@@ -15,26 +18,11 @@ namespace Hiflux.Infrastructure.Data.Queries
             _logger = logger;
         }
         private Task<bool> CategoryExistsAsync(int categoryId, CancellationToken ct) => _context.Categories.AnyAsync(c => c.CategoryId == categoryId, ct);
-        private CategoryDto MapCategory(Category c) => new()
-        {
-            CategoryId = c.CategoryId,
-            Name = c.Name,
-            CatalogUrl = c.CatalogUrl,
-            CadUrl = c.CadUrl,
-            Description = c.Description,
-            BodyMaterial = c.BodyMaterial,
-            SeatMaterial = c.SeatMaterial,
-            Design = c.Design,
-            TemperatureRange = c.TemperatureRange,
-            Approvals = c.Approvals,
-            DatasheetUrl = c.DatasheetUrl,
-            KeyFeatures = c.KeyFeatures,
-            Certificates = c.Certificates.Select(x => new CertificateDto { Label = x.Label, Url = x.Url }).ToList(),
-        };
+        
         public async Task<IReadOnlyList<CategoryDto>> GetCategoriesAsync(CancellationToken ct)
         {
             var categories = await _context.Categories.AsNoTracking().OrderBy(c => c.Name).ToListAsync(ct);
-            return categories.Select(MapCategory).ToList();
+            return categories.Select(CatalogMappings.MapCategory).ToList();
         }
         public async Task<IReadOnlyList<CategoryFilterDto>?> GetCategoryFiltersAsync(int categoryId, CancellationToken ct = default)
         {
@@ -72,5 +60,35 @@ namespace Hiflux.Infrastructure.Data.Queries
                 Values = valuesByFilter[fd.FilterId].OrderBy(v => v).ToList()
             }).ToList();
         }
+
+        public async Task<IReadOnlyList<CatalogProductDto>?> GetProductsAsync(int categoryId, IReadOnlyDictionary<string, string>? filters, CancellationToken ct)
+        {
+            var categoryExists = await _context.Categories.AnyAsync(c => c.CategoryId == categoryId, ct);
+            if (!categoryExists)
+            {
+                _logger.LogInformation("Category {CategoryId} not found when loading products", categoryId);
+                return null;
+            }
+            var query = _context.CatalogProducts.AsNoTracking().Where(p => p.CategoryId == categoryId);
+
+            if (filters is not null)
+            {
+                foreach (var pair in filters)
+                {
+                    var filterName = pair.Key;
+                    var filterValue = pair.Value;
+                    query = query.Where(p => p.FilterValues.Any(v => v.Filter.Name == filterName && v.Value == filterValue));
+                }
+            }
+
+            var products = await query
+                .OrderBy(p => p.PartNumber)
+                .Select(CatalogMappings.ToDto)
+                .ToListAsync(ct);
+            return products;
+
+        }
+        public Task<CatalogProductDto?> GetProductByPartNumberAsync(string partNumber, CancellationToken ct) => throw new NotImplementedException();
+        public Task<ConfiguratorStateDto?> GetConfiguratorStateAsync(int categoryId, IReadOnlyDictionary<string, string> selection, CancellationToken ct) => throw new NotImplementedException();
     }
 }

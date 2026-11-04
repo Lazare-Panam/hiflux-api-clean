@@ -1,4 +1,6 @@
-﻿using Hiflux.Infrastructure.Data;
+﻿using Hiflux.Core.Interfaces;
+using Hiflux.Infrastructure.Data;
+using Hiflux.Infrastructure.Data.Queries;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,6 +20,10 @@ namespace Hiflux.Infrastructure
                         maxRetryDelay: TimeSpan.FromSeconds(30),
                         errorNumbersToAdd: null);
                 }));
+        }
+        public static void ConfigureQueryServices(this IServiceCollection services)
+        {
+            services.AddScoped<IProductService, ProductService>();
         }
     }
 }

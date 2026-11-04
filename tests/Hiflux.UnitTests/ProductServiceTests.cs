@@ -90,4 +90,120 @@ public class ProductServiceTests
             connection.Dispose();
         }
     }
+
+    [Fact]
+    public async Task GetProductsAsync_returns_all_products_with_specs_when_no_filters()
+    {
+        var (context, connection) = CreateSeededContext();
+        try
+        {
+            var service = CreateService(context);
+
+            var result = await service.GetProductsAsync(10, null, default);
+
+            Assert.NotNull(result);
+            Assert.Equal(2, result!.Count);
+
+            // ordered by PartNumber
+            Assert.Equal("BV-100", result[0].PartNumber);
+            Assert.Equal("BV-101", result[1].PartNumber);
+
+            // specs are flattened from the product's filter values
+            Assert.Contains(result[0].Specs, s => s.Filter == "Size" && s.Value == "1/2\"");
+            Assert.Contains(result[0].Specs, s => s.Filter == "End Connection" && s.Value == "NPT");
+        }
+        finally
+        {
+            context.Dispose();
+            connection.Dispose();
+        }
+    }
+
+    [Fact]
+    public async Task GetProductsAsync_filters_by_a_single_facet()
+    {
+        var (context, connection) = CreateSeededContext();
+        try
+        {
+            var service = CreateService(context);
+
+            var filters = new Dictionary<string, string> { ["Size"] = "1/2\"" };
+            var result = await service.GetProductsAsync(10, filters, default);
+
+            Assert.NotNull(result);
+            var product = Assert.Single(result!);
+            Assert.Equal("BV-100", product.PartNumber);
+        }
+        finally
+        {
+            context.Dispose();
+            connection.Dispose();
+        }
+    }
+
+    [Fact]
+    public async Task GetProductsAsync_ANDs_multiple_facets()
+    {
+        var (context, connection) = CreateSeededContext();
+        try
+        {
+            var service = CreateService(context);
+
+            var filters = new Dictionary<string, string>
+            {
+                ["Size"] = "3/4\"",
+                ["End Connection"] = "NPT"
+            };
+            var result = await service.GetProductsAsync(10, filters, default);
+
+            Assert.NotNull(result);
+            var product = Assert.Single(result!);
+            Assert.Equal("BV-101", product.PartNumber);
+        }
+        finally
+        {
+            context.Dispose();
+            connection.Dispose();
+        }
+    }
+
+    [Fact]
+    public async Task GetProductsAsync_returns_empty_when_no_product_matches_the_filter()
+    {
+        var (context, connection) = CreateSeededContext();
+        try
+        {
+            var service = CreateService(context);
+
+            var filters = new Dictionary<string, string> { ["Size"] = "99\"" };
+            var result = await service.GetProductsAsync(10, filters, default);
+
+            Assert.NotNull(result);
+            Assert.Empty(result!);
+        }
+        finally
+        {
+            context.Dispose();
+            connection.Dispose();
+        }
+    }
+
+    [Fact]
+    public async Task GetProductsAsync_returns_null_when_category_does_not_exist()
+    {
+        var (context, connection) = CreateSeededContext();
+        try
+        {
+            var service = CreateService(context);
+
+            var result = await service.GetProductsAsync(999, null, default);
+
+            Assert.Null(result);
+        }
+        finally
+        {
+            context.Dispose();
+            connection.Dispose();
+        }
+    }
 }

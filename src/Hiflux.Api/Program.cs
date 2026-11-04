@@ -4,6 +4,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.ConfigureDatabases(builder.Configuration);
+builder.Services.ConfigureQueryServices();
 builder.Services.AddOpenApi();
 
 var app = builder.Build();
@@ -14,9 +15,6 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
 app.UseAuthorization();
-
 app.MapControllers();
-
 app.Run();
