@@ -1,8 +1,15 @@
 <Solution>
+  <Folder Name="/.github/" />
+  <Folder Name="/.github/workflows/">
+    <File Path=".github/workflows/build-and-test.yml" />
+  </Folder>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+  </Folder>
   <Folder Name="/src/">
+    <Project Path="src/Hiflux.Api/Hiflux.Api.csproj" />
     <Project Path="src/Hiflux.Core/Hiflux.Core.csproj" />
     <Project Path="src/Hiflux.Infrastructure/Hiflux.Infrastructure.csproj" />
-    <Project Path="src/Hiflux.Api/Hiflux.Api.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/Hiflux.UnitTests/Hiflux.UnitTests.csproj" />

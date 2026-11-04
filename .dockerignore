@@ -1,0 +1,21 @@
+# Build artifacts (these carry host-specific paths — keep them OUT of the image)
+**/bin/
+**/obj/
+
+# IDE / editor
+**/.vs/
+**/.vscode/
+**/*.user
+
+# Git / CI
+**/.git/
+**/.gitignore
+**/.github/
+
+# Docker
+**/Dockerfile*
+**/.dockerignore
+
+# Misc
+**/node_modules/
+**/*.md
