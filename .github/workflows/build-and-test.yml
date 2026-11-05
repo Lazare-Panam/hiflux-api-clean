@@ -33,8 +33,24 @@ jobs:
       - name: Lint
         run: dotnet format --verify-no-changes
 
-      - name: Terraform format
-        run: terraform fmt
+  terraform:
+    name: terraform-validate
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: infra/modules/site     
+    steps:
+      - uses: actions/checkout@v4
 
-      - name: Terraform validate
+      - name: Setup Terraform                       
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Format check
+        run: terraform fmt -check -recursive
+
+      - name: Init (providers only, no backend)
+        run: terraform init -backend=false
+
+      - name: Validate
         run: terraform validate
+
