@@ -62,6 +62,20 @@ artifacts/
 appsettings.*.local.json
 secrets.json
 
+# Terraform
+# .terraform/ holds downloaded providers (large, machine-specific) — but keep .terraform.lock.hcl tracked.
+**/.terraform/*
+# State can contain secrets in plaintext and is environment-specific — NEVER commit.
+*.tfstate
+*.tfstate.*
+crash.log
+crash.*.log
+# tfvars often hold secrets; commit a *.tfvars.example instead.
+*.tfvars
+*.tfvars.json
+.terraformrc
+terraform.rc
+
 # OS files
 .DS_Store
 Thumbs.db
